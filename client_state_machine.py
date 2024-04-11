@@ -119,7 +119,7 @@ class ClientSM:
 
                     # ----------your code here------#
                     print(peer_msg)
-                    self.out_msg = input("You:")
+                    self.out_msg = self.me + ' joined'
                     return self.out_msg
                     # ----------end of your code----#
 
@@ -140,7 +140,6 @@ class ClientSM:
                 # ----------your code here------#
                 peer_msg = json.loads(peer_msg)
                 print(peer_msg)
-                self.out_msg = input("You:")
                 return self.out_msg
                 # ----------end of your code----#
 
