@@ -119,7 +119,7 @@ class ClientSM:
 
                     # ----------your code here------#
                     print(peer_msg)
-                    pass
+                    self.out_msg = input("You:")
 
                     # ----------end of your code----#
 
@@ -140,7 +140,7 @@ class ClientSM:
                 # ----------your code here------#
                 peer_msg = json.loads(peer_msg)
                 print(peer_msg)
-                pass
+                self.out_msg = input("You:")
 
                 # ----------end of your code----#
 
