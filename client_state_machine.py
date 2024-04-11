@@ -120,7 +120,7 @@ class ClientSM:
                     # ----------your code here------#
                     print(peer_msg)
                     self.out_msg = input("You:")
-
+                    return self.out_msg
                     # ----------end of your code----#
 
 # ==============================================================================
@@ -141,7 +141,7 @@ class ClientSM:
                 peer_msg = json.loads(peer_msg)
                 print(peer_msg)
                 self.out_msg = input("You:")
-
+                return self.out_msg
                 # ----------end of your code----#
 
             # Display the menu again
