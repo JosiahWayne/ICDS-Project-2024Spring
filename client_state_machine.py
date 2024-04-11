@@ -119,7 +119,7 @@ class ClientSM:
 
                     # ----------your code here------#
                     print(peer_msg)
-                    self.out_msg = self.me + ' joined'
+                    self.connect_to(peer_msg['from'])
                     return self.out_msg
                     # ----------end of your code----#
 
