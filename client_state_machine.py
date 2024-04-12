@@ -117,7 +117,8 @@ class ClientSM:
                 if peer_msg["action"] == "connect":
 
                     # ----------your code here------#
-                    pass
+                    self.set_state(S_CHATTING)
+                    self.peer = peer_msg["from"]
                     # ----------end of your code----#
 
 # ==============================================================================
@@ -134,7 +135,7 @@ class ClientSM:
                     self.peer = ''
             if len(peer_msg) > 0:    # peer's stuff, coming in
                 # ----------your code here------#
-                pass
+                print(peer_msg)
                 # ----------end of your code----#
 
             # Display the menu again
