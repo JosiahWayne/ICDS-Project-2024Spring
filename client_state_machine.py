@@ -135,7 +135,18 @@ class ClientSM:
                     self.peer = ''
             if len(peer_msg) > 0:    # peer's stuff, coming in
                 # ----------your code here------#
+                try:
+                    peer_msg = json.loads(peer_msg)
+                except Exception as err:
+                    self.out_msg += " json.loads failed " + str(err)
                 print(peer_msg)
+                if peer_msg["action"] == "exchange":
+                    sender = peer_msg["from"]
+                    content = peer_msg["message"]
+                    print(f"({sender}) {content}")
+                elif peer_msg["action"] == "connect":
+                    sender = peer_msg["from"]
+                    print(f"({sender}) has joined the group.")
                 # ----------end of your code----#
 
             # Display the menu again
