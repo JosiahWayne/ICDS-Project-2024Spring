@@ -149,8 +149,7 @@ class ClientSM:
                     sender = peer_msg["from"]
                     self.out_msg += (f"({sender}) has joined the group.")
                 elif peer_msg["action"] == "disconnect":
-                    content = peer_msg["msg"]
-                    self.out_msg += (content)
+                    self.set_state(S_LOGGEDIN)
                 # ----------end of your code----#
 
             # Display the menu again
