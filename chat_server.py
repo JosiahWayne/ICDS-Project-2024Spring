@@ -128,8 +128,8 @@ class Server:
                 """
                 # IMPLEMENTATION
                 # ---- start your code ---- #
-                pass
-
+                message = msg["message"]
+                print("message is",message,sep=' ')
                 # ---- end of your code --- #
 
                 the_guys = self.group.list_me(from_name)[1:]
@@ -138,9 +138,10 @@ class Server:
 
                     # IMPLEMENTATION
                     # ---- start your code ---- #
-                    pass
+                    self.indices[g].add_msg_and_index(message)
+                    print("sending to",g, sep=' ')
                     mysend(
-                        to_sock, "...Remember to index the messages before sending, or search won't work")
+                        to_sock, message)
 
                     # ---- end of your code --- #
 
@@ -164,9 +165,8 @@ class Server:
 
                 # IMPLEMENTATION
                 # ---- start your code ---- #
-                pass
                 msg = "...needs to use self.group functions to work"
-
+                msg = self.group.list_all()
                 # ---- end of your code --- #
                 mysend(from_sock, json.dumps(
                     {"action": "list", "results": msg}))
@@ -177,10 +177,10 @@ class Server:
 
                 # IMPLEMENTATION
                 # ---- start your code ---- #
-                pass
                 poem = "...needs to use self.sonnet functions to work"
+                tg = msg["target"]
+                poem = self.sonnet.get_poem(int(tg))
                 print('here:\n', poem)
-
                 # ---- end of your code --- #
 
                 mysend(from_sock, json.dumps(
