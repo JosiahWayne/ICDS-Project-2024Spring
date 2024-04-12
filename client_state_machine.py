@@ -114,13 +114,10 @@ class ClientSM:
                 except Exception as err:
                     self.out_msg += " json.loads failed " + str(err)
                     return self.out_msg
-
                 if peer_msg["action"] == "connect":
 
                     # ----------your code here------#
-                    print(peer_msg)
-                    self.connect_to(peer_msg['from'])
-                    return self.out_msg
+                    pass
                     # ----------end of your code----#
 
 # ==============================================================================
@@ -136,11 +133,8 @@ class ClientSM:
                     self.state = S_LOGGEDIN
                     self.peer = ''
             if len(peer_msg) > 0:    # peer's stuff, coming in
-
                 # ----------your code here------#
-                peer_msg = json.loads(peer_msg)
-                print(peer_msg)
-                return self.out_msg
+                pass
                 # ----------end of your code----#
 
             # Display the menu again
