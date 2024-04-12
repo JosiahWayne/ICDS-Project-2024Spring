@@ -115,10 +115,11 @@ class ClientSM:
                     self.out_msg += " json.loads failed " + str(err)
                     return self.out_msg
                 if peer_msg["action"] == "connect":
-
                     # ----------your code here------#
-                    self.set_state(S_CHATTING)
+                    # self.set_state(S_CHATTING)
+                    self.state = S_CHATTING
                     self.peer = peer_msg["from"]
+                    self.out_msg += f"You are connected with {self.peer}"
                     # ----------end of your code----#
 
 # ==============================================================================
@@ -143,10 +144,13 @@ class ClientSM:
                 if peer_msg["action"] == "exchange":
                     sender = peer_msg["from"]
                     content = peer_msg["message"]
-                    print(f"({sender}) {content}")
+                    self.out_msg += (f"({sender}) {content}")
                 elif peer_msg["action"] == "connect":
                     sender = peer_msg["from"]
-                    print(f"({sender}) has joined the group.")
+                    self.out_msg += (f"({sender}) has joined the group.")
+                elif peer_msg["action"] == "disconnect":
+                    content = peer_msg["msg"]
+                    self.out_msg += (content)
                 # ----------end of your code----#
 
             # Display the menu again
