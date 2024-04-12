@@ -141,8 +141,8 @@ class Server:
                     self.indices[g].add_msg_and_index(message)
                     print("sending to",g, sep=' ')
                     mysend(
-                        to_sock, message)
-
+                        to_sock, json.dumps(
+                    {"action": "exchange", "from": from_name, "message": message}))
                     # ---- end of your code --- #
 
 # ==============================================================================
@@ -182,7 +182,6 @@ class Server:
                 poem = self.sonnet.get_poem(int(tg))
                 print('here:\n', poem)
                 # ---- end of your code --- #
-
                 mysend(from_sock, json.dumps(
                     {"action": "poem", "results": poem}))
 # ==============================================================================
