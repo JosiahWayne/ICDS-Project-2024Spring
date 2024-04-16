@@ -140,7 +140,6 @@ class ClientSM:
                     peer_msg = json.loads(peer_msg)
                 except Exception as err:
                     self.out_msg += " json.loads failed " + str(err)
-                print(peer_msg)
                 if peer_msg["action"] == "exchange":
                     sender = peer_msg["from"]
                     content = peer_msg["message"]

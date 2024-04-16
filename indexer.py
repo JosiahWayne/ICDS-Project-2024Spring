@@ -79,7 +79,7 @@ class PIndex(Index):
                 break
             poem.append(this_line)
             go_line += 1
-        # poem = "\n".join(poem)
+        poem = "\n".join(poem)
         return poem
     
 if __name__ == "__main__":
