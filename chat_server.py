@@ -130,6 +130,7 @@ class Server:
                 # ---- start your code ---- #
                 message = msg["message"]
                 print("message is",message,sep=' ')
+                self.indices[from_name].add_msg_and_index(message)
                 # ---- end of your code --- #
 
                 the_guys = self.group.list_me(from_name)[1:]
@@ -139,6 +140,7 @@ class Server:
                     # IMPLEMENTATION
                     # ---- start your code ---- #
                     self.indices[g].add_msg_and_index(message)
+                    print(self.indices)
                     print("sending to",g, sep=' ')
                     mysend(
                         to_sock, json.dumps(
@@ -198,10 +200,18 @@ class Server:
 
                 # IMPLEMENTATION
                 # ---- start your code ---- #
-                pass
                 search_rslt = "needs to use self.indices search to work"
+                tg = msg["target"]
+                print(msg)
+                print(self.logged_sock2name)
+                g = self.logged_sock2name[from_sock]
+                search_rslt = self.indices[g].search(tg)
+                print(search_rslt)
+                opt = ''
+                for item in search_rslt:
+                    opt += str(item) + '\n'
+                search_rslt = opt
                 print('server side search: ' + search_rslt)
-
                 # ---- end of your code --- #
                 mysend(from_sock, json.dumps(
                     {"action": "search", "results": search_rslt}))
