@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Apr 30 13:36:58 2021
+Adjusted on May 1 2024
 
 @author: bing
+@Second Author: Josiah
 """
 
 # import all the required  modules
@@ -31,6 +33,10 @@ class GUI:
         self.my_msg = ""
         self.system_msg = ""
 
+        self.ChatRelw = 0.65 #聊天主界面的相对宽度
+        self.BackgroundColor = "#17202A" #聊天大块元素的背景颜色
+        self.grouplist = []
+
     def login(self):
         # login window
         self.login = Toplevel()
@@ -57,9 +63,8 @@ class GUI:
         self.labelName.place(relheight = 0.1,
                              relx = 0.24, 
                              rely = 0.30)
-          
         # create a entry box for 
-        # tyoing the message
+        # typing the message
         self.entryName = Entry(self.login, 
                              font = "Helvetica 14")
         self.entryName.bind("<Return>", lambda event, self=self: self.goAhead(self.entryName.get()))
@@ -113,7 +118,7 @@ class GUI:
         self.Window.title("CHATROOM")
         self.Window.resizable(width = False,
                               height = False)
-        self.Window.configure(width = 470,
+        self.Window.configure(width = 700,
                               height = 550,
                               bg = "#17202A")
         self.labelHead = Label(self.Window,
@@ -123,15 +128,15 @@ class GUI:
                                font = "Helvetica 13 bold",
                                pady = 5)
           
-        self.labelHead.place(relwidth = 1)
+        self.labelHead.place(relwidth = 1 * self.ChatRelw)
         self.line = Label(self.Window,
                           width = 450,
                           bg = "#ABB2B9")
           
-        self.line.place(relwidth = 1,
+        self.line.place(relwidth = 1 * self.ChatRelw,
                         rely = 0.07,
                         relheight = 0.012)
-          
+
         self.textCons = Text(self.Window,
                              width = 20, 
                              height = 2,
@@ -142,14 +147,14 @@ class GUI:
                              pady = 5)
           
         self.textCons.place(relheight = 0.745,
-                            relwidth = 1, 
+                            relwidth = 1 * self.ChatRelw, 
                             rely = 0.08)
           
         self.labelBottom = Label(self.Window,
                                  bg = "#ABB2B9",
                                  height = 80)
           
-        self.labelBottom.place(relwidth = 1,
+        self.labelBottom.place(relwidth = 1 * self.ChatRelw,
                                rely = 0.825)
           
         self.entryMsg = Entry(self.labelBottom,
@@ -174,7 +179,6 @@ class GUI:
                                 width = 20,
                                 bg = "#ABB2B9",
                                 command = lambda : self.sendButton(self.entryMsg.get()))
-          
         self.buttonMsg.place(relx = 0.77,
                              rely = 0.008,
                              relheight = 0.06, 
@@ -185,21 +189,77 @@ class GUI:
         # create a scroll bar
         scrollbar = Scrollbar(self.textCons)
         self.textCons["yscrollcommand"] = scrollbar.set
+
         # place the scroll bar 
         # into the gui window
         scrollbar.place(relheight = 1,
                         relx = 0.974)
           
         scrollbar.config(command = self.textCons.yview)
-          
+
         self.textCons.config(state = DISABLED)
-  
+
+        ####下面是console的代码
+        #添加右侧容器
+        self.vtclineWidth = 0.01
+        self.labelRight = Label(
+            self.Window,
+            bg = self.BackgroundColor,
+        )
+        self.labelRight.place(
+            relx = 1 * self.ChatRelw,
+            rely = 0,
+            relwidth = 1 - self.ChatRelw,
+            relheight = 1
+        )
+
+        #添加分割线
+        self.vtcline = Label(self.labelRight,
+            height = 1,
+            bg = "#666666"
+        )
+        self.vtcline.place(
+            relwidth = self.vtclineWidth,
+            relx = 0,
+            rely = 0,
+            relheight = 1
+        )
+
+        #添加时间按钮
+        self.buttonTime = Button(
+            self.labelRight,
+            text = "Time",
+            bg = "#ABB2B9",
+            command = lambda : self.getTimeButton()
+        )
+        self.buttonTime.place(
+            relx = self.vtclineWidth,
+            rely = 0.05,
+            relheight = 0.1,
+            relwidth = 1 - self.vtclineWidth
+        )
+
+        #添加群组选择栏
+        self.groupSelection = ttk.Combobox(
+            self.labelRight,
+            values = self.grouplist
+        )
+        self.groupSelection.place(
+            relx = self.vtclineWidth,
+            rely = 0.05 + 0.1,
+            relwidth = 1 - self.vtclineWidth
+        )
+        self.groupSelection.bind("<<ComboboxSelected>>", self.selectionActivate)
+
+    def selectionActivate(self, event):
+        pass
+    def getTimeButton(self):
+        self.my_msg = ["system","who"]
+
     # function to basically start the thread for sending messages
     def sendButton(self, msg):
         self.textCons.config(state = DISABLED)
         self.my_msg = msg
-        # self.addtext(msg)
-        # print(msg)
         self.entryMsg.delete(0, END)
 
     def proc(self):
@@ -207,14 +267,17 @@ class GUI:
         while True:
             read, write, error = select.select([self.socket], [], [], 0)
             peer_msg = []
+            system_msg = False
             # print(self.msg)
             if self.socket in read:
                 peer_msg = self.recv()
             if len(self.my_msg) > 0 or len(peer_msg) > 0:
                 # print(self.system_msg)
+                if self.my_msg[0] == "system":
+                    self.my_msg = self.my_msg[1]
+                    system_msg = True
                 self.system_msg = self.sm.proc(self.my_msg, peer_msg)
-
-                if self.my_msg != "":
+                if self.my_msg != "" and not system_msg:
                     if len(self.system_msg) == 0:
                         out = f"[You] {self.my_msg}"
                     else:
@@ -231,6 +294,7 @@ class GUI:
         self.textCons.insert(END, text +"\n\n")
         self.textCons.config(state = DISABLED)
         self.textCons.see(END)
+
     def run(self):
         self.login()
 # create a GUI class object
