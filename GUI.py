@@ -21,6 +21,8 @@ class GUI:
     def __init__(self, send, recv, sm, s):
         # chat window which is currently hidden
         self.Window = Tk()
+        style = ttk.Style()
+        style.theme_use("clam") # 主题选择
         self.Window.withdraw()
         self.send = send
         self.recv = recv
@@ -45,26 +47,26 @@ class GUI:
                        font = "Helvetica 14 bold")
           
         self.pls.place(relheight = 0.15,
-                       relx = 0.2, 
+                       relx = 0.30, 
                        rely = 0.07)
         # create a Label
         self.labelName = Label(self.login,
                                text = "Name: ",
-                               font = "Helvetica 12")
+                               font = "Helvetica 14")
           
-        self.labelName.place(relheight = 0.2,
-                             relx = 0.1, 
-                             rely = 0.2)
+        self.labelName.place(relheight = 0.1,
+                             relx = 0.24, 
+                             rely = 0.30)
           
         # create a entry box for 
         # tyoing the message
         self.entryName = Entry(self.login, 
                              font = "Helvetica 14")
-          
+        self.entryName.bind("<Return>", lambda event, self=self: self.goAhead(self.entryName.get()))
         self.entryName.place(relwidth = 0.4, 
                              relheight = 0.12,
                              relx = 0.35,
-                             rely = 0.2)
+                             rely = 0.30)
           
         # set the focus of the curser
         self.entryName.focus()
@@ -163,7 +165,8 @@ class GUI:
                             relx = 0.011)
           
         self.entryMsg.focus()
-          
+        self.entryMsg.bind("<Return>", lambda event: self.sendButton(self.entryMsg.get()))
+
         # create a Send Button
         self.buttonMsg = Button(self.labelBottom,
                                 text = "Send",
@@ -181,7 +184,7 @@ class GUI:
           
         # create a scroll bar
         scrollbar = Scrollbar(self.textCons)
-          
+        self.textCons["yscrollcommand"] = scrollbar.set
         # place the scroll bar 
         # into the gui window
         scrollbar.place(relheight = 1,
@@ -195,6 +198,7 @@ class GUI:
     def sendButton(self, msg):
         self.textCons.config(state = DISABLED)
         self.my_msg = msg
+        # self.addtext(msg)
         # print(msg)
         self.entryMsg.delete(0, END)
 
@@ -208,13 +212,25 @@ class GUI:
                 peer_msg = self.recv()
             if len(self.my_msg) > 0 or len(peer_msg) > 0:
                 # print(self.system_msg)
-                self.system_msg += self.sm.proc(self.my_msg, peer_msg)
-                self.my_msg = ""
-                self.textCons.config(state = NORMAL)
-                self.textCons.insert(END, self.system_msg +"\n\n")      
-                self.textCons.config(state = DISABLED)
-                self.textCons.see(END)
+                self.system_msg = self.sm.proc(self.my_msg, peer_msg)
 
+                if self.my_msg != "":
+                    if len(self.system_msg) == 0:
+                        out = f"[You] {self.my_msg}"
+                    else:
+                        out = f"[You] {self.my_msg} \n\n {self.system_msg}"
+                    self.addtext(out)
+                    self.my_msg = ""
+                    continue
+
+                self.my_msg = ""
+                self.addtext(self.system_msg)
+
+    def addtext(self, text):
+        self.textCons.config(state = NORMAL)
+        self.textCons.insert(END, text +"\n\n")
+        self.textCons.config(state = DISABLED)
+        self.textCons.see(END)
     def run(self):
         self.login()
 # create a GUI class object
