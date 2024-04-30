@@ -36,14 +36,17 @@ class Index:
         words = m.split()
         self.total_words += len(words)
         for wd in words:
-            if wd not in self.index:
-                self.index[wd] = [l,]
-            else:
-                self.index[wd].append(l)
+            self.index[wd] = self.index.get(wd, []) + [l] 
+    #### Alternatively, the following also works
+#        for wd in words:
+#            try:
+#                self.index[wd]+= [l]
+#            except KeyError:
+#                self.index[wd] = [l]
                                      
     def search(self, term):
         msgs = []
-        if (term in self.index.keys()):
+        if term in self.index.keys():
             indices = self.index[term]
             msgs = [(i, self.msgs[i]) for i in indices]
         return msgs
@@ -64,7 +67,7 @@ class PIndex(Index):
     
     def get_poem(self, p):
         p_str = self.int2roman[p] + '.'
-        p_next_str = self.int2roman[p + 1] + '.'
+        p_next_str = self.int2roman[p+1] + '.'
         temp = self.search(p_str)
         if temp:
             [(go_line, m)] = temp

@@ -4,7 +4,7 @@ import time
 # use local loop back address by default
 #CHAT_IP = '127.0.0.1'
 # CHAT_IP = socket.gethostbyname(socket.gethostname())
-CHAT_IP = socket.gethostbyname(socket.gethostname())
+CHAT_IP = ''#socket.gethostbyname(socket.gethostname())
 
 CHAT_PORT = 1112
 SERVER = (CHAT_IP, CHAT_PORT)
