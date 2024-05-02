@@ -134,6 +134,7 @@ class Server:
             elif msg["action"] == "list":
                 from_name = self.logged_sock2name[from_sock]
                 msg = self.group.list_all()
+                print(msg)
                 mysend(from_sock, json.dumps({"action":"list", "results":msg}))
 #==============================================================================
 #             retrieve a sonnet
