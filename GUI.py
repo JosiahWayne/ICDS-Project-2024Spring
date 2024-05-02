@@ -36,6 +36,7 @@ class GUI:
         self.ChatRelw = 0.65 #聊天主界面的相对宽度
         self.BackgroundColor = "#17202A" #聊天大块元素的背景颜色
         self.grouplist = []
+        self.system_msg_selector = False
 
     def login(self):
         # login window
@@ -247,14 +248,51 @@ class GUI:
         self.groupSelection.place(
             relx = self.vtclineWidth,
             rely = 0.05 + 0.1,
-            relwidth = 1 - self.vtclineWidth
+            relwidth = 1 - self.vtclineWidth - 0.2
         )
-        self.groupSelection.bind("<<ComboboxSelected>>", self.selectionActivate)
+        self.groupSelection.bind("<<ComboboxSelected>>", self.connectto)
 
-    def selectionActivate(self, event):
-        pass
-    def getTimeButton(self):
+        self.refreshButton = Button(
+            self.labelRight,
+            text = "Refresh",
+            bg = "#ABB2B9",
+            command = lambda : self.freshGroupList()
+        )
+        self.refreshButton.place(
+            relx = 0.8,
+            rely = 0.05 + 0.1,
+            relwidth = 0.2
+        )
+
+        self.quitButton = Button(
+            self.labelRight,
+            text = "Quit",
+            bg = "#ABB2B9",
+            command = lambda : self.disconnect()
+        )
+        self.quitButton.place(
+            relx = self.vtclineWidth,
+            rely = 0.9,
+            relwidth = 1 - self.vtclineWidth,
+            relheight = 0.1
+        )
+    
+    def disconnect(self):
+        self.my_msg = "bye"
+
+    def connectto(self, event):
+        selected_item = self.groupSelection.get()
+        self.my_msg = ["system", 'c' + selected_item]
+
+    def freshGroupList(self):
         self.my_msg = ["system","who"]
+        while len(self.grouplist) == 0:
+            continue
+        print(self.grouplist)
+        self.groupSelection["values"] = list(self.grouplist[0].keys())
+
+    def getTimeButton(self):
+        self.my_msg = ["system","time"]
 
     # function to basically start the thread for sending messages
     def sendButton(self, msg):
@@ -267,17 +305,28 @@ class GUI:
         while True:
             read, write, error = select.select([self.socket], [], [], 0)
             peer_msg = []
-            system_msg = False
+            self.system_msg_selector = False
             # print(self.msg)
             if self.socket in read:
                 peer_msg = self.recv()
             if len(self.my_msg) > 0 or len(peer_msg) > 0:
                 # print(self.system_msg)
-                if self.my_msg[0] == "system":
-                    self.my_msg = self.my_msg[1]
-                    system_msg = True
+                if len(self.my_msg) >= 2 and self.my_msg[0] == "system":
+                    self.system_msg_selector = True
+                    if self.my_msg[1][0] == "c":
+                        self.my_msg = self.my_msg[1]
+
+                    if self.my_msg[1] == "time":
+                        self.my_msg = self.my_msg[1]
+
+                    if self.my_msg[1] == "who":
+                        self.my_msg = self.my_msg[1]
+                        self.grouplist = self.sm.proc(self.my_msg, peer_msg)
+                        self.my_msg = ""
+                        continue
+
                 self.system_msg = self.sm.proc(self.my_msg, peer_msg)
-                if self.my_msg != "" and not system_msg:
+                if self.my_msg != "" and not self.system_msg_selector:
                     if len(self.system_msg) == 0:
                         out = f"[You] {self.my_msg}"
                     else:
