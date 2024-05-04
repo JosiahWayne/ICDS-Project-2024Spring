@@ -73,6 +73,7 @@ class ClientSM:
                     mysend(self.s, json.dumps({"action":"list"}))
                     logged_in = json.loads(myrecv(self.s))["results"]
                     # self.out_msg += 'Here are all the users in the system:\n'
+                    print(self.out_msg)
                     self.out_msg += logged_in
 
                 elif my_msg[0] == 'c':

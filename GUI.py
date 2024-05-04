@@ -311,7 +311,7 @@ class GUI:
                 peer_msg = self.recv()
             if len(self.my_msg) > 0 or len(peer_msg) > 0:
                 # print(self.system_msg)
-                if len(self.my_msg) >= 2 and self.my_msg[0] == "system":
+                if len(self.my_msg) >= 2 and self.my_msg[0] == "system": #这边还没写之前的判断逻辑，记得写
                     self.system_msg_selector = True
                     if self.my_msg[1][0] == "c":
                         self.my_msg = self.my_msg[1]

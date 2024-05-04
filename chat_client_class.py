@@ -2,7 +2,8 @@ import socket
 import sys
 from chat_utils import *
 import client_state_machine as csm
-from GUI import *
+# from GUI import *
+from newGUI import *
 
 class Client:
     def __init__(self, args):
