@@ -169,8 +169,8 @@ class mainWindow(QWidget, Ui_main):
 
     def searchfor(self):
         #这里history还没写好
-        self.sm.gethistory()
-        # print(context)
+        context = self.sm.gethistory()
+        print(context)
 
     def connectto(self, index):
         self.my_msg = ["system", 'c' + self.groupSelection.itemText(index)]

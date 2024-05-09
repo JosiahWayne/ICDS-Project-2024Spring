@@ -14,6 +14,8 @@ import json
 import pickle as pkl
 from chat_utils import *
 import chat_group as grp
+import gpt_utils
+import threading
 
 class Server:
     def __init__(self):
@@ -151,6 +153,15 @@ class Server:
                     to_sock = self.logged_name2sock[g]
                     self.indices[g].add_msg_and_index(said2)
                     mysend(to_sock, json.dumps({"action":"exchange", "from":msg["from"], "message":msg["message"]}))
+                if msg["gpt"] == True:
+                    self.gptres = ""
+                    self.gptcontext = msg["context"]
+                    self.gpttheguys = the_guys
+                    self.gptsaid2 = said2
+                    process = threading.Thread(target=self.chattogpt)
+                    process.daemon = True
+                    process.start()
+
 #==============================================================================
 #                 listing available peers
 #==============================================================================
@@ -168,7 +179,7 @@ class Server:
                 user = msg["from"]
                 msg = self.indices[user].gethistory()
                 print(msg)
-                mysend(from_sock, json.dumps({"action":"gethistory", "history":msg}))
+                mysend(from_sock, json.dumps({"action":"gethistory", "results":msg}))
 #==============================================================================
 #             retrieve a sonnet
 #==============================================================================
@@ -220,6 +231,19 @@ class Server:
 #==============================================================================
 # main loop, loops *forever*
 #==============================================================================
+    def chattogpt(self):
+        print(self.gptcontext)
+        self.gptres = gpt_utils.chattoGPT(self.gptcontext)
+        # while self.gptres != "":
+        #     continue
+        print(self.gptres)
+        the_guys = self.gpttheguys
+        said2 = self.gptsaid2
+        for g in the_guys:
+            to_sock = self.logged_name2sock[g]
+            self.indices[g].add_msg_and_index(said2)
+            mysend(to_sock, json.dumps({"action":"exchange", "from":"[GPT]:", "message":self.gptres}))
+
     def run(self):
         print ('starting server...')
         while(1):

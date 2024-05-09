@@ -14,6 +14,7 @@ class ClientSM:
         self.out_msg = ''
         self.s = s
         self.fresh = False
+        self.history = ""
 
     def set_state(self, state):
         self.state = state
@@ -57,11 +58,7 @@ class ClientSM:
             return self.fresh
     
     def gethistory(self):
-        msg = json.dumps({"action":"gethistory", "from": self.me})
-        mysend(self.s, msg)
-        history = json.loads(myrecv(self.s))["history"]
-        print(history)
-        return history
+        return self.history
 
     def getgroup(self):
         msg = json.dumps({"action":"getgroup", "from": self.me})
@@ -148,14 +145,23 @@ class ClientSM:
 #==============================================================================
         elif self.state == S_CHATTING:
             if len(my_msg) > 0:     # my stuff going out
-                mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg}))
+                self.history += "I" + ":" + my_msg + "\n"
                 if my_msg == 'bye':
                     self.disconnect()
                     self.state = S_LOGGEDIN
                     self.peer = ''
                     self.freshstatus(True)
+                    mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg, "gpt": False}))
+                
+                elif len(my_msg) >= 4 and my_msg[0:4] == "@GPT":
+                    context = self.gethistory()
+                    mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg, "context":context, "gpt": True}))
+
+                else:
+                    mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg, "gpt": False}))
             if len(peer_msg) > 0:    # peer's stuff, coming in
                 peer_msg = json.loads(peer_msg)
+                self.history += peer_msg["from"] + ":" + peer_msg["message"] + "\n"
                 # print(peer_msg)
                 if peer_msg["action"] == "connect":
                     self.out_msg += "(" + peer_msg["from"] + " joined)\n"
@@ -165,10 +171,9 @@ class ClientSM:
                     self.freshstatus(True)
                 else:
                     self.out_msg += peer_msg["from"] + ' ' + peer_msg["message"]
-
-
             # Display the menu again
             if self.state == S_LOGGEDIN:
+                self.history = ""
                 self.out_msg += menu
 #==============================================================================
 # invalid state
