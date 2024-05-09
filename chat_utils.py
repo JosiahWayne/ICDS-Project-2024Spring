@@ -57,6 +57,9 @@ def mysend(s, msg):
     total_sent = 0
     while total_sent < len(msg) :
         sent = s.send(msg[total_sent:])
+        # print("#" * 10)
+        # print(sent)
+        # print("#" * 10)
         if sent==0:
             print('server disconnected')
             break
@@ -71,6 +74,7 @@ def myrecv(s):
             print('disconnected')
             return('')
         size += text
+    # print(size)
     size = int(size)
     #now receive message
     msg = ''

@@ -13,6 +13,7 @@ class ClientSM:
         self.me = ''
         self.out_msg = ''
         self.s = s
+        self.fresh = False
 
     def set_state(self, state):
         self.state = state
@@ -48,6 +49,27 @@ class ClientSM:
         self.out_msg += 'You are disconnected from ' + self.peer + '\n'
         self.peer = ''
 
+    def freshstatus(self, c=False):
+        if c == True:
+            self.fresh = not self.fresh
+            return not self.fresh
+        else:
+            return self.fresh
+    
+    def gethistory(self):
+        msg = json.dumps({"action":"gethistory", "from": self.me})
+        mysend(self.s, msg)
+        history = json.loads(myrecv(self.s))["history"]
+        print(history)
+        return history
+
+    def getgroup(self):
+        msg = json.dumps({"action":"getgroup", "from": self.me})
+        mysend(self.s, msg)
+        grouplst = json.loads(myrecv(self.s))["grouplist"]
+        # print(grouplst)
+        return grouplst
+
     def proc(self, my_msg, peer_msg):
         self.out_msg = ''
 #==============================================================================
@@ -73,13 +95,14 @@ class ClientSM:
                     mysend(self.s, json.dumps({"action":"list"}))
                     logged_in = json.loads(myrecv(self.s))["results"]
                     # self.out_msg += 'Here are all the users in the system:\n'
-                    print(self.out_msg)
+                    # print(self.out_msg)
                     self.out_msg += logged_in
 
                 elif my_msg[0] == 'c':
                     peer = my_msg[1:]
                     peer = peer.strip()
                     if self.connect_to(peer) == True:
+                        self.freshstatus(True)
                         self.state = S_CHATTING
                         self.out_msg += 'Connect to ' + peer + '. Chat away!\n\n'
                         self.out_msg += '-----------------------------------\n'
@@ -117,6 +140,7 @@ class ClientSM:
                     self.out_msg += '. Chat away!\n\n'
                     self.out_msg += '------------------------------------\n'
                     self.state = S_CHATTING
+                    self.freshstatus(True)
 
 #==============================================================================
 # Start chatting, 'bye' for quit
@@ -129,12 +153,16 @@ class ClientSM:
                     self.disconnect()
                     self.state = S_LOGGEDIN
                     self.peer = ''
+                    self.freshstatus(True)
             if len(peer_msg) > 0:    # peer's stuff, coming in
                 peer_msg = json.loads(peer_msg)
+                # print(peer_msg)
                 if peer_msg["action"] == "connect":
                     self.out_msg += "(" + peer_msg["from"] + " joined)\n"
+                    self.freshstatus(True)
                 elif peer_msg["action"] == "disconnect":
                     self.state = S_LOGGEDIN
+                    self.freshstatus(True)
                 else:
                     self.out_msg += peer_msg["from"] + ' ' + peer_msg["message"]
 

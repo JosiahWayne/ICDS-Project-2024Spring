@@ -31,7 +31,16 @@ class Index:
         self.add_msg(m)
         line_at = self.total_msgs - 1
         self.indexing(m, line_at)
- 
+
+    def gethistory(self):
+        his = ''
+        # print(type(self.msgs[1]))
+        # for i in self.msgs[-1]:
+        #     his += i +'\n'
+        # print(his)
+        his = self.msgs[-1]
+        return his
+
     def indexing(self, m, l):
         words = m.split()
         self.total_words += len(words)
