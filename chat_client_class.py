@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 from chat_utils import *
 import client_state_machine as csm
 # from GUI import *

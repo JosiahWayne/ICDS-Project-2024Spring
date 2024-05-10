@@ -128,15 +128,13 @@ class mainWindow(QWidget, Ui_main):
         self.system_msg = ""
         self.grouplist = []
         self.system_msg_selector = False
-        self.maxscore = 0
-        self.rank = [["Josiah", "9999999"]]
 
     def sendButtonAction(self):
         self.my_msg = self.textEntry.text()
         self.textEntry.clear()
 
     def getranking(self):
-        self.my_msg = ["system","getrank"]
+        self.my_msg = ["system", "getrank#!@#!@!!!#!@!#!@#!$!$#%:::system"]
 
     def refreshButtonAction(self):
         self.groupSelection.clear()
@@ -154,23 +152,47 @@ class mainWindow(QWidget, Ui_main):
         self.my_msg = ["system", "bye"]
     
     def gamestart(self):
-        self.refreshgameRankinng()
+        self.refreshgameRanking()
         self.flappy_thread()
     def flappy_thread(self): #写成两个函数因为觉得可能需要threading
-        # 在这里调用flappy函数，并将返回值存储到self.result中
         self.score = flappy()
+        self.my_msg = ["system", f"sys::updaterank{str(self.score)}"]
     
-    def refreshgameRankinng(self):
-        self.rankingName.clear()
-        self.rankingScore.clear()
-        for i in range(len(self.rank)):
-            self.rankingName.append(self.rank[i][0])
-            self.rankingScore.append(self.rank[i][1])
+    def refreshgameRanking(self):
+        self.getgameRankingThread()
+        # rankprocess = threading.Thread(target=self.getgameRankingThread)
+        # rankprocess.daemon = True
+        # rankprocess.start()
+        
+    def clearcontext(self, obj):
+        cursor = obj.textCursor()
+        cursor.select(QTextCursor.Document)
+        cursor.removeSelectedText()
 
+    def getgameRankingThread(self):
+        # self.my_msg = ["system", 'getrank#!@#!@!!!#!@!#!@#!$!$#%:::system']
+        # time.sleep(0.1)
+        self.clearcontext(self.rankingName)
+        self.clearcontext(self.rankingScore)
+        # self.rankingName.clear()
+        # self.rankingScore.clear()
+        sorted_scores = sorted(self.rank.items(), key=lambda x: int(x[1]), reverse=True)
+
+        for name, score in sorted_scores:
+            self.rankingName.append(name)
+            self.rankingScore.append(score)
+            
+        
     def searchfor(self):
-        #这里history还没写好
+        # self.maxscore = self.maxscore + 1
+        # self.rank["Josiah"] = str(self.maxscore)
+        # self.my_msg = ["system", f"sys::updaterank{str(self.maxscore)}"]
+        # self.refreshgameRanking()
+        pass
+
+    def getcontext(self):
         context = self.sm.gethistory()
-        print(context)
+        return context
 
     def connectto(self, index):
         self.my_msg = ["system", 'c' + self.groupSelection.itemText(index)]
@@ -186,8 +208,9 @@ class mainWindow(QWidget, Ui_main):
             self.groupmembers.append(m)
 
     def proc(self):
-        # print(threading.get_ident())
-        while True: 
+        self.maxscore = 0
+        self.rank = {"Josiah": "9999999"}
+        while True:
             read, write, error = select.select([self.socket], [], [], 0)
             peer_msg = []
             self.system_msg_selector = False
@@ -197,6 +220,14 @@ class mainWindow(QWidget, Ui_main):
                 self.refreshgroup()
             if self.socket in read:
                 peer_msg = self.recv()
+            if peer_msg != []:
+                print(peer_msg)
+                pm = json.loads(peer_msg)
+                if pm["action"] == "freshrank":
+                    peer_msg = []
+                    self.rank = pm["rank"]
+                    self.refreshgameRanking()
+                    continue
             if len(self.my_msg) > 0 or len(peer_msg) > 0:
                 if len(self.my_msg) >= 2 and self.my_msg[0] == "system":
                     self.system_msg_selector = True
@@ -205,6 +236,18 @@ class mainWindow(QWidget, Ui_main):
 
                     if self.my_msg[1] == "time":
                         self.my_msg = self.my_msg[1]
+
+                    if self.my_msg[1] == "getrank#!@#!@!!!#!@!#!@#!$!$#%:::system":
+                        self.my_msg = self.my_msg[1]
+                        self.rank = self.sm.proc(self.my_msg, peer_msg)
+                        self.my_msg = ""
+                        continue
+
+                    if "sys::updaterank" in self.my_msg[1]:
+                        self.my_msg = self.my_msg[1]
+                        self.rank = self.sm.proc(self.my_msg, peer_msg)
+                        self.my_msg = ""
+                        continue
 
                     if self.my_msg[1] == "who":
                         self.my_msg = self.my_msg[1]

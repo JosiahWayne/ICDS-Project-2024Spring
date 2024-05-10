@@ -36,6 +36,12 @@ class Server:
         # self.sonnet = pkl.load(self.sonnet_f)
         # self.sonnet_f.close()
         self.sonnet = indexer.PIndex("AllSonnets.txt")
+        self.rank = {}
+        with open("rank.txt", "r") as file:
+            for i in file.readlines():
+                temp = [i.split()[0],i.split()[1]]
+                self.rank[temp[0]] = temp[1]
+
     def new_client(self, sock):
         #add to all sockets and to new clients
         print('new client...')
@@ -44,6 +50,7 @@ class Server:
         self.all_sockets.append(sock)
 
     def login(self, sock):
+        # print(self.all_sockets)
         #read the msg that should have login code plus username
         userdata = "Userindex.txt"
         userindex = {"username": [], "password": []}
@@ -79,6 +86,7 @@ class Server:
                             print(name + ' logged in')
                             self.group.join(name)
                             mysend(sock, json.dumps({"action":"login", "status":"ok"}))
+                            mysend(sock, json.dumps({"action": "freshrank", "rank": self.rank}))
                         else: #a client under this name has already logged in
                             mysend(sock, json.dumps({"action":"login", "status":"duplicate"}))
                             print(name + ' duplicate login attempt')
@@ -174,6 +182,25 @@ class Server:
             elif msg["action"] == "getgroup":
                 msg = self.group.list_me(msg["from"])
                 mysend(from_sock, json.dumps({"action":"getgroup", "grouplist":msg}))
+
+            elif msg["action"] == "getrank":
+                rank = self.rank
+                print(rank)
+                mysend(from_sock, json.dumps({"action":"getrank", "rank":rank}))
+            
+            elif msg["action"] == "updaterank":
+                print("ok!")
+                name = msg["name"]
+                score = msg["score"]
+                print(name, score)
+                if int(self.rank[name]) <= int(score):
+                    self.rank[name] = score
+                with open("rank.txt", "w") as file:
+                    for i in self.rank.keys():
+                        file.write(f"{i} {self.rank[i]}\n")
+                mysend(from_sock,json.dumps({"action": "updaterank", "results":'ok'}))
+                for g in self.all_sockets[1:]:
+                    mysend(g, json.dumps({"action": "freshrank", "rank": self.rank}))
             
             elif msg["action"] == "gethistory":
                 user = msg["from"]

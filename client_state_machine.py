@@ -66,6 +66,25 @@ class ClientSM:
         grouplst = json.loads(myrecv(self.s))["grouplist"]
         # print(grouplst)
         return grouplst
+    
+    def getrank(self):
+        msg = json.dumps({"action":"getrank"})
+        mysend(self.s, msg)
+        print("recved")
+        recv = myrecv(self.s)
+        print(recv)
+        print("############")
+        rank = json.loads(recv)["rank"]
+        print(rank)
+        print("############")
+        return rank
+
+    def updatescore(self, name, score):
+        msg = json.dumps({"action":"updaterank", "name":name, "score": score})
+        mysend(self.s, msg)
+        print("sent")
+        result = json.loads(myrecv(self.s))["results"]
+        # print(result)
 
     def proc(self, my_msg, peer_msg):
         self.out_msg = ''
@@ -94,6 +113,9 @@ class ClientSM:
                     # self.out_msg += 'Here are all the users in the system:\n'
                     # print(self.out_msg)
                     self.out_msg += logged_in
+
+                elif my_msg == "getrank#!@#!@!!!#!@!#!@#!$!$#%:::system":
+                    return self.getrank()
 
                 elif my_msg[0] == 'c':
                     peer = my_msg[1:]
@@ -124,7 +146,10 @@ class ClientSM:
                         self.out_msg += poem + '\n\n'
                     else:
                         self.out_msg += 'Sonnet ' + poem_idx + ' not found\n\n'
-
+                
+                elif "sys::updaterank" in my_msg:
+                    score = my_msg[15:]
+                    self.updatescore(self.me, score)
                 else:
                     self.out_msg += menu
 
@@ -157,11 +182,17 @@ class ClientSM:
                     context = self.gethistory()
                     mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg, "context":context, "gpt": True}))
 
+                elif my_msg == "getrank#!@#!@!!!#!@!#!@#!$!$#%:::system":
+                    return self.getrank()
+                
+                elif "sys::updaterank" in my_msg:
+                    score = my_msg[15:]
+                    self.updatescore(self.me, score)
+
                 else:
                     mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg, "gpt": False}))
             if len(peer_msg) > 0:    # peer's stuff, coming in
                 peer_msg = json.loads(peer_msg)
-                self.history += peer_msg["from"] + ":" + peer_msg["message"] + "\n"
                 # print(peer_msg)
                 if peer_msg["action"] == "connect":
                     self.out_msg += "(" + peer_msg["from"] + " joined)\n"
@@ -171,6 +202,7 @@ class ClientSM:
                     self.freshstatus(True)
                 else:
                     self.out_msg += peer_msg["from"] + ' ' + peer_msg["message"]
+                    self.history += peer_msg["from"] + ":" + peer_msg["message"] + "\n"
             # Display the menu again
             if self.state == S_LOGGEDIN:
                 self.history = ""
