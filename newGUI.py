@@ -9,6 +9,7 @@ from chat_utils import *
 import json
 import time
 from flappy import *
+import pygame
 
 from qt_material import apply_stylesheet
 import qdarktheme
@@ -22,8 +23,8 @@ class GUI():
         self.socket = s
 
     def run(self):
-        # global loginWindow
         app = QApplication([])
+        self.appsitt = app
         # apply_stylesheet(app, theme = 'light_yellow.xml')
         qdarktheme.setup_theme()
         login = loginWindow(self.send, self.recv, self.sm, self.socket)
@@ -31,24 +32,6 @@ class GUI():
         app.exec()
 
 #本来想优化一下多线程的工作逻辑但是发现太麻烦了搞不定所以我是傻逼
-# class Worker(QThread):
-#     finished = Signal()
-#     def __init__(self, parent, statemachine, gm):
-#         super().__init__(parent)
-#         self.sm = statemachine
-#         self.groupmembers = gm
-
-#     def run(self):
-#         # 模拟一些工作
-#         group = self.sm.getgroup()
-#         print('#' * 100)
-#         print(threading.get_ident())
-#         # self.groupmembers.clear()
-#         for m in group:
-#             self.groupmembers.append(m)
-#         condition = True  # 根据具体条件设置
-#         if condition:
-#             self.finished.emit()
     
 class loginWindow(QWidget, Ui_Login):
     def __init__(self, send, recv, sm, s): #send is a function
@@ -104,9 +87,6 @@ class mainWindow(QWidget, Ui_main):
         process.start()
 
     def bindActions(self):
-        # print(threading.get_ident())
-        # self.worker = Worker(self,self.sm, self.groupmembers)
-        # self.worker.finished.connect(self.refreshgroup)
         self.quitButton.pressed.connect(self.quitfrom)
         self.searchButton.pressed.connect(self.searchfor)
         self.groupSelection.activated.connect(self.connectto)
@@ -153,11 +133,12 @@ class mainWindow(QWidget, Ui_main):
     
     def gamestart(self):
         self.refreshgameRanking()
-        self.flappy_thread()
+        self.flappy_thread()    
     def flappy_thread(self): #写成两个函数因为觉得可能需要threading
         self.score = flappy()
         self.my_msg = ["system", f"sys::updaterank{str(self.score)}"]
     
+
     def refreshgameRanking(self):
         self.getgameRankingThread()
         # rankprocess = threading.Thread(target=self.getgameRankingThread)
@@ -184,11 +165,10 @@ class mainWindow(QWidget, Ui_main):
             
         
     def searchfor(self):
-        # self.maxscore = self.maxscore + 1
-        # self.rank["Josiah"] = str(self.maxscore)
-        # self.my_msg = ["system", f"sys::updaterank{str(self.maxscore)}"]
-        # self.refreshgameRanking()
-        pass
+        search_msg = self.textEntry.text()
+        self.textEntry.clear()
+        self.my_msg = ["system", f"?{search_msg}"]
+        
 
     def getcontext(self):
         context = self.sm.gethistory()
@@ -256,6 +236,9 @@ class mainWindow(QWidget, Ui_main):
                         continue
                     if self.my_msg[1] == "bye":
                         self.my_msg = self.my_msg[1]
+                    
+                    if self.my_msg[1][0] == "?":
+                        self.my_msg = self.my_msg[1]
                 self.system_msg = self.sm.proc(self.my_msg, peer_msg)
                 if self.my_msg != "" and not self.system_msg_selector:
                     if len(self.system_msg) == 0:
@@ -265,12 +248,13 @@ class mainWindow(QWidget, Ui_main):
                     self.addtext(out)
                     self.my_msg = ""
                     continue
-
+                # self.system_msg = str(peer_msg)   
                 self.my_msg = ""
-                self.addtext(self.system_msg)
+                if pm["action"] != "generate_key" and pm["action"] != "exchange_key":
+                    self.addtext(self.system_msg)
     
     def addtext(self, text):
-        if text[0:5] != "[You]":
+        if len(text) >= 5 and text[0:5] != "[You]":
             cursor = self.textEdit.textCursor()
             cursor.movePosition(QTextCursor.End)  # 将光标移动到文本末尾
             # 获取当前块的格式

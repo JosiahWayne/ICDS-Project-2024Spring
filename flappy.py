@@ -137,6 +137,9 @@ def flappy(): #return score
     BACKGROUND = pygame.transform.scale(BACKGROUND, (SCREEN_WIDHT, SCREEN_HEIGHT))
     BEGIN_IMAGE = pygame.image.load('assets/sprites/message.png').convert_alpha()
 
+    bgm = pygame.mixer.Sound('bgm.mp3')
+    bgm.play()
+
     game_over = False
     #death_time = 0
 

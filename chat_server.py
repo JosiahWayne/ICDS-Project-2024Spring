@@ -223,7 +223,9 @@ class Server:
                 name = msg["name"]
                 score = msg["score"]
                 print(name, score)
-                if int(self.rank[name]) <= int(score):
+                if name in self.rank.keys() and int(self.rank[name]) <= int(score):
+                    self.rank[name] = score
+                elif name not in self.rank.keys():
                     self.rank[name] = score
                 with open("rank.txt", "w") as file:
                     for i in self.rank.keys():
@@ -299,7 +301,7 @@ class Server:
         for g in the_guys:
             to_sock = self.logged_name2sock[g]
             self.indices[g].add_msg_and_index(said2)
-            mysend(to_sock, json.dumps({"action":"exchange", "from":"[GPT]:", "message":self.gptres}))
+            mysend(to_sock, json.dumps({"action":"exchange", "from":"[GPT]:", "message":self.gptres, "gpt": True}))
 
     def run(self):
         print ('starting server...')
