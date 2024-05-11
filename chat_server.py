@@ -156,11 +156,13 @@ class Server:
                 the_guys = self.group.list_me(from_name)
                 #said = msg["from"]+msg["message"]
                 said2 = text_proc(msg["message"], from_name)
+                print(said2)
                 self.indices[from_name].add_msg_and_index(said2)
                 for g in the_guys[1:]:
                     to_sock = self.logged_name2sock[g]
                     self.indices[g].add_msg_and_index(said2)
                     mysend(to_sock, json.dumps({"action":"exchange", "from":msg["from"], "message":msg["message"]}))
+                    print({"action":"exchange", "from":msg["from"], "message":msg["message"]})
                 if msg["gpt"] == True:
                     self.gptres = ""
                     self.gptcontext = msg["context"]
@@ -169,7 +171,35 @@ class Server:
                     process = threading.Thread(target=self.chattogpt)
                     process.daemon = True
                     process.start()
-
+#==============================================================================
+#                 encrpytion model
+#==============================================================================
+            elif msg["action"]=="input":
+                from_name = self.logged_sock2name[from_sock]
+                the_guys = self.group.list_me(from_name)
+                for g in the_guys[1:]:
+                    to_sock = self.logged_name2sock[g]
+                    mysend(to_sock, json.dumps({"action":"generate_key", "from":msg["from"], "to":g, "message":msg["message"]}))
+                print(msg)
+            elif msg["action"]=="exchange_key":
+                from_name = self.logged_sock2name[from_sock]
+                the_guys = self.group.list_me(from_name)
+                to=msg["to"]
+                for g in the_guys[1:]:
+                    if g==to:
+                        to_sock = self.logged_name2sock[g]
+                        mysend(to_sock, json.dumps({"action":"exchange_key", "from":msg["from"], "to":to, "public_key":msg["public_key"]}))
+                print(msg)
+            elif msg["action"]=="exchange_encrypted_msg":
+                from_name = self.logged_sock2name[from_sock]
+                the_guys = self.group.list_me(from_name)
+                encrypted_msg=msg["encrypted_msg"]
+                to=msg["to"]
+                for g in the_guys[1:]:
+                    if g==to:
+                        to_sock = self.logged_name2sock[g]
+                        mysend(to_sock, json.dumps({"action":"exchange_encrypted_msg", "from":msg["from"], "to":to,"encrypted_msg":encrypted_msg}))
+                print(msg)
 #==============================================================================
 #                 listing available peers
 #==============================================================================

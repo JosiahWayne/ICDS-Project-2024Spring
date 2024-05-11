@@ -5,6 +5,8 @@ Created on Sun Apr  5 00:00:32 2015
 """
 from chat_utils import *
 import json
+import emcrpyted_com as RSA
+import random
 
 class ClientSM:
     def __init__(self, s):
@@ -190,19 +192,44 @@ class ClientSM:
                     self.updatescore(self.me, score)
 
                 else:
-                    mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg, "gpt": False}))
+                    global original_msg
+                    original_msg=my_msg
+                    null=""
+                    mysend(self.s,json.dumps({"action":"input", "from":self.me, "message":null, "gpt": False}))
+                    #mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg, "gpt": False}))
             if len(peer_msg) > 0:    # peer's stuff, coming in
                 peer_msg = json.loads(peer_msg)
-                # print(peer_msg)
+                print(peer_msg)
                 if peer_msg["action"] == "connect":
                     self.out_msg += "(" + peer_msg["from"] + " joined)\n"
                     self.freshstatus(True)
                 elif peer_msg["action"] == "disconnect":
                     self.state = S_LOGGEDIN
                     self.freshstatus(True)
+                elif peer_msg["action"]=="generate_key":
+                    global private
+                    public,private=RSA.generate_keypair(256)
+                    g=peer_msg["from"]
+                    print(public,private)
+                    mysend(self.s, json.dumps({"action":"exchange_key", "from": self.me , "to":g, "public_key":public}))
+                elif peer_msg["action"]=="exchange_key":
+                    public=peer_msg["public_key"]
+                    try:
+                        encrypted_msg=RSA.encrypt(original_msg,public)
+                    except NameError:
+                        pass
+                    to=peer_msg["from"]
+                    mysend(self.s, json.dumps({"action":"exchange_encrypted_msg", "from": self.me , "to":to, "encrypted_msg":encrypted_msg}))
+                elif peer_msg["action"]=="exchange_encrypted_msg":
+                    encrypted_msg = peer_msg['encrypted_msg']
+                    decrpyted_msg=RSA.decrypt(encrypted_msg,private)
+                    encrypted = ''.join([str(elem) for elem in encrypted_msg])
+                    self.out_msg += "["+peer_msg["from"]+"]:" + "(encrypted)"+ encrypted + '\n'
+                    self.out_msg += "["+peer_msg["from"]+"]:" + "(decrypted)"+ decrpyted_msg + '\n'
+                    self.history += "["+peer_msg["from"]+"]:" + "(decrypted)"+ decrpyted_msg + '\n'
                 else:
                     self.out_msg += peer_msg["from"] + ' ' + peer_msg["message"]
-                    self.history += peer_msg["from"] + ":" + peer_msg["message"] + "\n"
+                    self.history += "["+peer_msg["from"]+"]:" + "(decrypted)"+ decrpyted_msg + '\n'
             # Display the menu again
             if self.state == S_LOGGEDIN:
                 self.history = ""

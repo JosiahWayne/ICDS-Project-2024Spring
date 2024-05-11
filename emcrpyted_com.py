@@ -1,30 +1,50 @@
 import random
-import math
 
-def is_prime(num):
-    if num<=1:
+def miller_rabin_primality_test(n, k=128):
+    if n <= 1:
         return False
-    if num<=3:
+    if n in (2, 3):
         return True
-    if num%2==0 or num%3==0:
+    if n % 2 == 0:
         return False
-    i=5
-    while i*i<=num:
-        if num%i==0 or num%(i+2)==0:
+
+    # Write n as d * 2^r + 1
+    s = 0
+    r = n - 1
+    while r & 1 == 0:
+        s += 1
+        r //= 2
+
+    def witness(a, d, n):
+        x = pow(a, d, n)
+        if x == 1 or x == n - 1:
+            return True
+        while d != n - 1:
+            x = (x * x) % n
+            d *= 2
+            if x == 1:
+                return False
+            if x == n - 1:
+                return True
+        return False
+
+    # Perform k rounds of testing
+    for _ in range(k):
+        a = random.randint(2, n - 2)
+        if not witness(a, r, n):
             return False
-        i+=6
+
     return True
 
 def generate_random_prime(bit_length):
-    """生成指定位数的随机素数"""
     while True:
         num = random.getrandbits(bit_length)
         if num%2==0:
             num+=1
-        if is_prime(num):
+        if miller_rabin_primality_test(num):
             return num
 
-def multiplicative_inverse(e,phi):
+def multiplicative_inverse(e, phi):
     old_r, r = e, phi
     old_s, s = 1, 0
     while r != 0:
@@ -32,10 +52,16 @@ def multiplicative_inverse(e,phi):
         old_r, r = r, old_r - quotient * r
         old_s, s = s, old_s - quotient * s
     if old_r > 1:
-        return None  
+        return None
     if old_s < 0:
         old_s += phi
-    return int(old_s)
+    return old_s
+
+def gcd_(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
     
 def generate_keypair(bit_length):
     p=generate_random_prime(bit_length)
@@ -43,9 +69,12 @@ def generate_keypair(bit_length):
     n=p*q
     a=p-1
     b=q-1
-    gcd=math.gcd(a,b)
-    lcm=(a*b)/gcd
-    public_e=random.randint(1,lcm)
+    lcm=a*b
+    public_e=random.randrange(1,lcm)
+    gcd=gcd_(public_e,lcm)
+    while gcd!=1:
+        public_e=random.randrange(1,lcm)
+        gcd=gcd_(public_e,lcm)
     public_n=n
     private_d=multiplicative_inverse(public_e,lcm)
     return ((public_e,public_n),(private_d,public_n))
@@ -61,12 +90,12 @@ def decrypt(encrpted_msg,keypair):
     origin_msg=''.join(origin_msg_list)
     return origin_msg
     
-    '''def main():
-        words="abcdefg"
-        keypair=generate_keypair(8)
-        print(keypair)
-        encrypted=encrypt(words,keypair[0])
-        print(encrypted)
-        decrpyted=decrypt(encrypted,keypair[1])
-        print(decrpyted)
-    main()'''
+'''def main():
+    words="abcdefg"
+    keypair=generate_keypair(256)
+    print(keypair)
+    encrypted=encrypt(words,keypair[0])
+    print(encrypted)
+    decrpyted=decrypt(encrypted,keypair[1])
+    print(decrpyted)
+main()'''
