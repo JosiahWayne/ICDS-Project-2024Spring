@@ -1,3 +1,1 @@
-Josiah 100
-1 118
-Eric 20
+Josiah 1000

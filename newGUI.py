@@ -251,7 +251,7 @@ class mainWindow(QWidget, Ui_main):
                     continue
                 # self.system_msg = str(peer_msg)   
                 self.my_msg = ""
-                if pm["action"] != "generate_key" and pm["action"] != "exchange_key":
+                if pm["action"] != "generate_key" and pm["action"] != "exchange_key" and pm["action"] != "give_public_key" and pm["action"] != "generate_keypair    ":
                     self.addtext(self.system_msg)
     
     def addtext(self, text):
