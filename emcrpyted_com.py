@@ -1,4 +1,5 @@
 import random
+import math
 
 def miller_rabin_primality_test(n, k=128):
     if n <= 1:
@@ -7,8 +8,7 @@ def miller_rabin_primality_test(n, k=128):
         return True
     if n % 2 == 0:
         return False
-
-    # Write n as d * 2^r + 1
+    
     s = 0
     r = n - 1
     while r & 1 == 0:
@@ -28,7 +28,6 @@ def miller_rabin_primality_test(n, k=128):
                 return True
         return False
 
-    # Perform k rounds of testing
     for _ in range(k):
         a = random.randint(2, n - 2)
         if not witness(a, r, n):
@@ -38,31 +37,25 @@ def miller_rabin_primality_test(n, k=128):
 
 def generate_random_prime(bit_length):
     while True:
-        num = random.getrandbits(bit_length)
+        num=random.getrandbits(bit_length)
         if num%2==0:
             num+=1
         if miller_rabin_primality_test(num):
             return num
 
-def multiplicative_inverse(e, phi):
-    old_r, r = e, phi
-    old_s, s = 1, 0
-    while r != 0:
-        quotient = old_r // r
-        old_r, r = r, old_r - quotient * r
-        old_s, s = s, old_s - quotient * s
-    if old_r > 1:
+def multiplicative_inverse(public_e, lcm):
+    remain_a, remain_b = public_e, lcm
+    coeff_a, coeff_b = 1, 0
+    while remain_b != 0:
+        quotient = remain_a // remain_b
+        remain_a, remain_b = remain_b, remain_a - quotient * remain_b
+        coeff_a, coeff_b = coeff_b, coeff_a - quotient * coeff_b
+    if remain_a > 1:
         return None
-    if old_s < 0:
-        old_s += phi
-    return old_s
+    if coeff_a < 0:
+        coeff_a += lcm
+    return coeff_a
 
-def gcd_(a, b):
-    while b != 0:
-        a, b = b, a % b
-    return a
-
-    
 def generate_keypair(bit_length):
     p=generate_random_prime(bit_length)
     q=generate_random_prime(bit_length)
@@ -71,10 +64,10 @@ def generate_keypair(bit_length):
     b=q-1
     lcm=a*b
     public_e=random.randrange(1,lcm)
-    gcd=gcd_(public_e,lcm)
+    gcd=math.gcd(public_e,lcm)
     while gcd!=1:
         public_e=random.randrange(1,lcm)
-        gcd=gcd_(public_e,lcm)
+        gcd=math.gcd(public_e,lcm)
     public_n=n
     private_d=multiplicative_inverse(public_e,lcm)
     return ((public_e,public_n),(private_d,public_n))

@@ -174,23 +174,23 @@ class Server:
 #==============================================================================
 #                 encrpytion model
 #==============================================================================
-            elif msg["action"]=="input":
+            elif msg["action"]=="chat_request":
                 from_name = self.logged_sock2name[from_sock]
                 the_guys = self.group.list_me(from_name)
                 for g in the_guys[1:]:
                     to_sock = self.logged_name2sock[g]
-                    mysend(to_sock, json.dumps({"action":"generate_key", "from":msg["from"], "to":g, "message":msg["message"]}))
+                    mysend(to_sock, json.dumps({"action":"generate_keypair", "from":msg["from"], "to":g, "message":msg["message"]}))
                 print(msg)
-            elif msg["action"]=="exchange_key":
+            elif msg["action"]=="give_public_key":
                 from_name = self.logged_sock2name[from_sock]
                 the_guys = self.group.list_me(from_name)
                 to=msg["to"]
                 for g in the_guys[1:]:
                     if g==to:
                         to_sock = self.logged_name2sock[g]
-                        mysend(to_sock, json.dumps({"action":"exchange_key", "from":msg["from"], "to":to, "public_key":msg["public_key"]}))
+                        mysend(to_sock, json.dumps({"action":"give_public_key", "from":msg["from"], "to":to, "public_key":msg["public_key"]}))
                 print(msg)
-            elif msg["action"]=="exchange_encrypted_msg":
+            elif msg["action"]=="transfer_encrypted_msg":
                 from_name = self.logged_sock2name[from_sock]
                 the_guys = self.group.list_me(from_name)
                 encrypted_msg=msg["encrypted_msg"]
@@ -198,7 +198,7 @@ class Server:
                 for g in the_guys[1:]:
                     if g==to:
                         to_sock = self.logged_name2sock[g]
-                        mysend(to_sock, json.dumps({"action":"exchange_encrypted_msg", "from":msg["from"], "to":to,"encrypted_msg":encrypted_msg}))
+                        mysend(to_sock, json.dumps({"action":"transfer_encrypted_msg", "from":msg["from"], "to":to,"encrypted_msg":encrypted_msg}))
                 print(msg)
 #==============================================================================
 #                 listing available peers
