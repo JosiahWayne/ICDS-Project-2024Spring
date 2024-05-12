@@ -224,8 +224,11 @@ class ClientSM:
                     encrypted_msg = peer_msg['encrypted_msg']
                     decrpyted_msg=RSA.decrypt(encrypted_msg,private)
                     encrypted = ''.join([str(elem) for elem in encrypted_msg])
-                    self.out_msg += "["+peer_msg["from"]+"]:" + "(encrypted)"+ encrypted + '\n'
-                    self.out_msg += "["+peer_msg["from"]+"]:" + "(decrypted)"+ decrpyted_msg
+                    #output with encrypted message
+                    # self.out_msg += "["+peer_msg["from"]+"]:" + "(encrypted)"+ encrypted + '\n'
+                    # self.out_msg += "["+peer_msg["from"]+"]:" + "(decrypted)"+ decrpyted_msg
+                    #output without encrypted message
+                    self.out_msg += "["+peer_msg["from"]+"]:" + decrpyted_msg
                     self.history += "["+peer_msg["from"]+"]:" + "(decrypted)"+ decrpyted_msg + '\n'
                 elif peer_msg["action"] == "exchange":
                     self.out_msg += peer_msg["from"] + ' ' + peer_msg["message"]

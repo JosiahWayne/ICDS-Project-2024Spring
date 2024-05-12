@@ -9,7 +9,7 @@ import time
 url = "https://openai.api2d.net/v1/chat/completions"
 headers = {
   'Content-Type': 'application/json',
-  'Authorization': 'Bearer fk226555-DCh9BjnQ8juitfMYRT0Ypw12cknERR0f' # <-- 把 fkxxxxx 替换成你自己的 Forward Key，注意前面的 Bearer 要保留，并且和 Key 中间有一个空格。
+  'Authorization': 'Bearer fk226555-DCh9BjnQ8juitfMYRT0Ypw12cknERR0f' # API Key
 }
 context = ''
 data = {

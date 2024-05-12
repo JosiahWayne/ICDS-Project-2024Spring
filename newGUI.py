@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 from PySide6.QtCore import QTimer, QThread, Signal
 from PySide6.QtGui import QTextCursor, Qt, QTextBlockFormat
 from Ui_login import Ui_Login
@@ -25,7 +25,7 @@ class GUI():
     def run(self):
         app = QApplication([])
         self.appsitt = app
-        # apply_stylesheet(app, theme = 'light_yellow.xml')
+        # apply_stylesheet(app, theme = 'light_teal.xml')
         qdarktheme.setup_theme()
         login = loginWindow(self.send, self.recv, self.sm, self.socket)
         login.show()
@@ -60,6 +60,9 @@ class loginWindow(QWidget, Ui_Login):
             if response["status"] == 'ok':
                 pass
     
+    def loginfailed(self):
+        QMessageBox.warning(self,"Login Failed","Login Failed. Please check your username and password.")
+
     def goAhead(self, username, passcode):
         if len(username) > 0:
             msg = json.dumps({"action":"login", "name": username, "password": passcode})
@@ -72,7 +75,7 @@ class loginWindow(QWidget, Ui_Login):
                 self.sm.set_myname(username)
                 self.mainWindow.show()
             elif response["status"] == 'failed':
-                return False
+                self.loginfailed()
         
 
 class mainWindow(QWidget, Ui_main):
@@ -87,6 +90,7 @@ class mainWindow(QWidget, Ui_main):
         process.start()
 
     def bindActions(self):
+        self.timeButton.pressed.connect(self.checktime)
         self.quitButton.pressed.connect(self.quitfrom)
         self.searchButton.pressed.connect(self.searchfor)
         self.groupSelection.activated.connect(self.connectto)
@@ -151,14 +155,9 @@ class mainWindow(QWidget, Ui_main):
         cursor.removeSelectedText()
 
     def getgameRankingThread(self):
-        # self.my_msg = ["system", 'getrank#!@#!@!!!#!@!#!@#!$!$#%:::system']
-        # time.sleep(0.1)
         self.clearcontext(self.rankingName)
         self.clearcontext(self.rankingScore)
-        # self.rankingName.clear()
-        # self.rankingScore.clear()
         sorted_scores = sorted(self.rank.items(), key=lambda x: int(x[1]), reverse=True)
-
         for name, score in sorted_scores:
             self.rankingName.append(name)
             self.rankingScore.append(score)
@@ -169,6 +168,8 @@ class mainWindow(QWidget, Ui_main):
         self.textEntry.clear()
         self.my_msg = ["system", f"?{search_msg}"]
         
+    def checktime(self):
+        self.my_msg = ["system", "time"]
 
     def getcontext(self):
         context = self.sm.gethistory()

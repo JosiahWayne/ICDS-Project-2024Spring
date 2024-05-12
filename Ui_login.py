@@ -69,6 +69,8 @@ class Ui_Login(object):
 
         self.passwordInput = QLineEdit(Login)
         self.passwordInput.setObjectName(u"passwordInput")
+        self.passwordInput.setInputMethodHints(Qt.InputMethodHint.ImhHiddenText|Qt.InputMethodHint.ImhNoAutoUppercase|Qt.InputMethodHint.ImhNoPredictiveText|Qt.InputMethodHint.ImhSensitiveData)
+        self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.horizontalLayout.addWidget(self.passwordInput)
 

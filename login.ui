@@ -100,7 +100,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="passwordInput"/>
+        <widget class="QLineEdit" name="passwordInput">
+         <property name="inputMethodHints">
+          <set>Qt::InputMethodHint::ImhHiddenText|Qt::InputMethodHint::ImhNoAutoUppercase|Qt::InputMethodHint::ImhNoPredictiveText|Qt::InputMethodHint::ImhSensitiveData</set>
+         </property>
+         <property name="echoMode">
+          <enum>QLineEdit::EchoMode::Password</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
